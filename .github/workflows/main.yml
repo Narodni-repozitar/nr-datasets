@@ -45,9 +45,9 @@ jobs:
         run: |
           poetry install
           cat poetry.lock
-      - name: Test with pytest
-        run: |
-          "./run-tests.sh"
+#      - name: Test with pytest
+#        run: |
+#          "./run-tests.sh"
       - name: Push schemas
         if: github.ref == 'refs/heads/master'
         run: "./push-schemas.sh"
