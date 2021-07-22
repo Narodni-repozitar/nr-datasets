@@ -1,4 +1,8 @@
 {
+  "aliases": {
+    "{PREFIX}nr-all": {},
+    "{PREFIX}nr-all-datasets": {}
+  },
   "mappings": {
     "date_detection": false,
     "numeric_detection": false,

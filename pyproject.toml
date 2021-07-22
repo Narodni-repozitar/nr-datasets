@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "techlib-nr-datasets"
-version = "1.0.0a1"
+version = "1.0.0a2"
 description = "Czech National Repository datasets data model."
 license = "MIT"
 keywords = ["Czech", "Nation", "Repository", "Invenio", "datasets"]
@@ -19,7 +19,6 @@ oarepo = "^3.3.59"
 
 [tool.poetry.dev-dependencies]
 oarepo = "^3.3"
-oarepo-mapping-includes = "<=1.2.0"
 oarepo-invenio-model = "^2.0.1"
 oarepo-multilingual = "^2.2.0"
 oarepo-taxonomies = "^3.0.0a4"
