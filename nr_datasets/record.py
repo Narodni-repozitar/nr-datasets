@@ -1,5 +1,5 @@
 from flask import url_for
-from invenio_records.api import Record
+from invenio_records_files.api import Record
 from oarepo_communities.converters import CommunityPIDValue
 from oarepo_communities.proxies import current_oarepo_communities
 from oarepo_communities.record import CommunityRecordMixin

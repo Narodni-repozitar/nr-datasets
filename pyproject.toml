@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "techlib-nr-datasets"
-version = "1.0.0a2"
+version = "1.0.0a3"
 description = "Czech National Repository datasets data model."
 license = "MIT"
 keywords = ["Czech", "Nation", "Repository", "Invenio", "datasets"]
@@ -53,3 +53,6 @@ techlib-nr-generic = "^1.0.0-alpha.1"
 
 [tool.poetry.plugins."invenio_pidstore.fetchers"]
 'nr_datasets' = 'nr_datasets.fetchers:nr_datasets_id_fetcher'
+
+[tool.poetry.plugins.'oarepo_model_builder.datamodels']
+'nr_datasets' = 'nr_datasets.datamodels'
