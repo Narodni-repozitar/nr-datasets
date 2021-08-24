@@ -11,7 +11,12 @@ from __future__ import absolute_import, print_function
 
 import logging
 
+from oarepo_communities.signals import on_request_approval, on_request_changes, on_approve, on_publish, on_unpublish, \
+    on_revert_approval, on_delete_draft
+
 from . import config
+from .handlers import handle_request_approval, handle_request_changes, handle_approve, handle_revert_approval, \
+    handle_publish, handle_unpublish, handle_delete_draft
 
 log = logging.getLogger('nr-datasets')
 
@@ -27,6 +32,7 @@ class NRDatasets(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
+        self.connect_signals()
 
     def init_config(self, app):
         """Initialize configuration.
@@ -42,3 +48,12 @@ class NRDatasets(object):
 
         app.config.setdefault('RECORDS_REST_DEFAULT_SORT', {}).update(
             config.RECORDS_REST_DEFAULT_SORT)
+
+    def connect_signals(self):
+        on_request_approval.connect(handle_request_approval)
+        on_request_changes.connect(handle_request_changes)
+        on_approve.connect(handle_approve)
+        on_revert_approval.connect(handle_revert_approval)
+        on_publish.connect(handle_publish)
+        on_unpublish.connect(handle_unpublish)
+        on_delete_draft.connect(handle_delete_draft)
