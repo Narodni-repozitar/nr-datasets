@@ -16,7 +16,8 @@ from invenio_records_rest.facets import terms_filter
 from invenio_records_rest.utils import allow_all, deny_all
 from .links import nr_links_factory
 from oarepo_communities.search import community_search_factory
-from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
+# TODO: this needs to be updated to new common data model
+# from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
 from oarepo_communities.links import community_record_links_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
 from oarepo_records_draft import DRAFT_IMPORTANT_FILTERS
@@ -288,17 +289,25 @@ DATASETS_FACETS = {
 RECORDS_REST_FACETS = {
     draft_index_name: {
         "aggs": translate_facets(
-            {**DATASETS_FACETS, **FACETS, **CURATOR_FACETS, **DRAFT_IMPORTANT_FACETS},
+            {**DATASETS_FACETS,
+             # **FACETS, **CURATOR_FACETS,
+             **DRAFT_IMPORTANT_FACETS},
             label='{facet_key}',
             value='{value_key}'),
-        "filters": {**DATASETS_FILTERS, **FILTERS, **CURATOR_FILTERS, **DRAFT_IMPORTANT_FILTERS}
+        "filters": {**DATASETS_FILTERS,
+                    # **FILTERS, **CURATOR_FILTERS,
+                    **DRAFT_IMPORTANT_FILTERS}
     },
     all_datasets_index_name: {
         "aggs": translate_facets(
-            {**DATASETS_FACETS, **FACETS, **CURATOR_FACETS, **DRAFT_IMPORTANT_FACETS},
+            {**DATASETS_FACETS,
+             # **FACETS, **CURATOR_FACETS,
+             **DRAFT_IMPORTANT_FACETS},
             label='{facet_key}',
             value='{value_key}'),
-        "filters": {**DATASETS_FILTERS, **FILTERS, **CURATOR_FILTERS, **DRAFT_IMPORTANT_FILTERS}
+        "filters": {**DATASETS_FILTERS,
+                    #**FILTERS, **CURATOR_FILTERS,
+                    **DRAFT_IMPORTANT_FILTERS}
     },
 }
 
