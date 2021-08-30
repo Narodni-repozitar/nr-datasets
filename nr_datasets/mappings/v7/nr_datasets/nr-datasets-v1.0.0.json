@@ -9,8 +9,8 @@
      "dynamic": false,
      "oarepo:extends": [
        "nr-datasets-metadata-v3.0.0.json#/mappings",
-       "communities-v1.0.0.json#/Communities",
-       "fsm-record-v1.0.0.json#/FSMRecord"
+       "communities-v3.0.0.json#/Communities",
+       "fsm-record-v2.0.0.json#/FSMRecord"
      ]
    }
  }
