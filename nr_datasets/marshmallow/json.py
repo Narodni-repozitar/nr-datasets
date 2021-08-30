@@ -7,12 +7,12 @@
 
 """JSON Schemas."""
 
-from nr_datasets_metadata.marshmallow import DatasetMetadataSchemaV1
+from nr_datasets_metadata.marshmallow import DatasetMetadataSchemaV3
 from oarepo_communities.marshmallow import OARepoCommunitiesMixin
 from oarepo_fsm.marshmallow import FSMRecordSchemaMixin
 
 
 class NRDatasetMetadataSchemaV1(OARepoCommunitiesMixin,
                                 FSMRecordSchemaMixin,
-                                DatasetMetadataSchemaV1):
+                                DatasetMetadataSchemaV3):
     """Schema for NR dataset record metadata."""

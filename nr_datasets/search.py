@@ -1,17 +1,22 @@
-from nr_common.search import NRRecordsSearch
+from flask import current_app
+from oarepo_communities.search import CommunitySearch
 
 
-class DatasetRecordSearch(NRRecordsSearch):
-    """Dataset collection search."""
+class DatasetRecordsSearch(CommunitySearch):
     LIST_SOURCE_FIELDS = [
-        'id', 'oarepo:validity.valid', 'oarepo:draft',
-        'title', 'abstract', 'creators', 'dates', 'resource_type',
-        'contributor', 'keywords', 'subject', 'abstract', 'state', 'languages',
-        '_primary_community', '_communities', 'access'
-        '$schema', '_files'
+        'InvenioID', 'oarepo:validity.valid', 'oarepo:draft',
+        'titles', 'abstract', 'creators', 'dateCreated', 'resourceType',
+        'contributors', 'keywords', 'subjectCategories', 'oarepo:recordStatus', 'language',
+        'oarepo:primaryCommunity', 'oarepo:secondaryCommunities', '$schema', '_files'
     ]
     HIGHLIGHT_FIELDS = {
-        'title.cs': None,
-        'title._': None,
-        'title.en': None
+        'titles.title.cs': None,
+        'titles.title._': None,
+        'titles.title.en': None
     }
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html#return-agg-type
+        typed_keys = current_app.config.get("NR_ES_TYPED_KEYS", False)
+        self._params = {'typed_keys': typed_keys}

@@ -14,8 +14,8 @@ from functools import partial
 from elasticsearch_dsl.query import Bool, Q
 from invenio_records_rest.facets import terms_filter
 from invenio_records_rest.utils import allow_all, deny_all
-from nr_common.links import nr_links_factory
-from nr_common.search import community_search_factory
+from .links import nr_links_factory
+from oarepo_communities.search import community_search_factory
 from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
 from oarepo_communities.links import community_record_links_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
@@ -32,7 +32,7 @@ from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_
     DRAFT_DATASET_PID_TYPE, DRAFT_DATASET_RECORD, ALL_DATASET_PID_TYPE, ALL_DATASET_RECORD, \
     all_datasets_index_name
 from nr_datasets.record import draft_index_name
-from nr_datasets.search import DatasetRecordSearch
+from .search import DatasetRecordsSearch
 
 _ = lambda x: x
 
@@ -67,7 +67,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'default_media_type': 'application/json',
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         # 'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
@@ -90,7 +90,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
         'search_factory_imp': community_search_factory,
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         'search_serializers': {
             'application/json': 'oarepo_validate:json_search',
         },
@@ -140,7 +140,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'default_media_type': 'application/json',
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         # 'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
@@ -160,7 +160,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'search_index': draft_index_name,
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         'search_serializers': {
             'application/json': 'oarepo_validate:json_search',
         },
@@ -188,7 +188,7 @@ RECORDS_REST_ENDPOINTS = {
         pid_fetcher='nr_all',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
-        search_class=DatasetRecordSearch,
+        search_class=DatasetRecordsSearch,
         search_index=all_datasets_index_name,
         search_serializers={
             'application/json': 'oarepo_validate:json_search',
@@ -217,7 +217,7 @@ RECORDS_REST_ENDPOINTS = {
         pid_fetcher='nr_all',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
-        search_class=DatasetRecordSearch,
+        search_class=DatasetRecordsSearch,
         search_index=all_datasets_index_name,
         search_factory_imp=community_search_factory,
         search_serializers={
