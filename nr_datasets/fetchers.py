@@ -41,7 +41,7 @@ def nr_datasets_id_fetcher(record_uuid, data):
     :param data: The record metadata.
     :returns: A :data:`invenio_pidstore.fetchers.FetchedPID` instance.
     """
-    id_field = 'id'
+    id_field = 'InvenioID'
     return FetchedPID(  # FetchedPID je obyčejný namedtuple
         provider=NRDatasetsIdProvider,
         pid_type=NRDatasetsIdProvider.pid_type,

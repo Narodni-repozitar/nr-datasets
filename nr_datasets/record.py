@@ -1,7 +1,6 @@
 from flask import url_for
 from invenio_records_files.api import Record
 from oarepo_fsm.mixins import FSMMixin
-from oarepo_invenio_model.marshmallow import InvenioRecordMetadataSchemaV1Mixin, InvenioRecordMetadataFilesMixin
 from oarepo_communities.converters import CommunityPIDValue
 from oarepo_communities.proxies import current_oarepo_communities
 from oarepo_communities.record import CommunityRecordMixin
@@ -11,7 +10,7 @@ from oarepo_validate import SchemaKeepingRecordMixin, MarshmallowValidatedRecord
 
 from .constants import published_index_name, draft_index_name, \
     all_datasets_index_name, DATASETS_PREFERRED_SCHEMA, DATASETS_ALLOWED_SCHEMAS
-from .marshmallow import NRDatasetMetadataSchemaV1
+from .marshmallow import NRDatasetMetadataSchemaV3
 
 
 class DatasetBaseRecord(SchemaKeepingRecordMixin,
@@ -20,12 +19,10 @@ class DatasetBaseRecord(SchemaKeepingRecordMixin,
                         InheritedSchemaRecordMixin,
                         CommunityRecordMixin,
                         FSMMixin,
-                        InvenioRecordMetadataSchemaV1Mixin,
-                        InvenioRecordMetadataFilesMixin,
                         Record):
     ALLOWED_SCHEMAS = DATASETS_ALLOWED_SCHEMAS
     PREFERRED_SCHEMA = DATASETS_PREFERRED_SCHEMA
-    MARSHMALLOW_SCHEMA = NRDatasetMetadataSchemaV1
+    MARSHMALLOW_SCHEMA = NRDatasetMetadataSchemaV3
 
 
 class PublishedDatasetRecord(InvalidRecordAllowedMixin, DatasetBaseRecord):
@@ -35,7 +32,7 @@ class PublishedDatasetRecord(InvalidRecordAllowedMixin, DatasetBaseRecord):
     def canonical_url(self):
         return url_for('invenio_records_rest.datasets-community_item',
                        pid_value=CommunityPIDValue(
-                           self['id'],
+                           self['InvenioID'],
                            current_oarepo_communities.get_primary_community_field(self)),
                        _external=True)
 
@@ -47,7 +44,7 @@ class DraftDatasetRecord(DraftRecordMixin, DatasetBaseRecord):
     def canonical_url(self):
         return url_for('invenio_records_rest.draft-datasets-community_item',
                        pid_value=CommunityPIDValue(
-                           self['id'],
+                           self['InvenioID'],
                            current_oarepo_communities.get_primary_community_field(self)),
                        _external=True)
 

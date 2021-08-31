@@ -14,10 +14,10 @@ from nr_datasets.providers import NRDatasetsIdProvider
 
 
 def nr_datasets_id_minter(record_uuid, data):
-    assert 'id' not in data
+    assert 'InvenioID' not in data
     provider = NRDatasetsIdProvider.create(
         object_type='rec',
         object_uuid=record_uuid,
     )
-    data['id'] = provider.pid.pid_value
+    data['InvenioID'] = provider.pid.pid_value
     return provider.pid
