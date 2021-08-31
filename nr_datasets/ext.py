@@ -39,7 +39,6 @@ class NRDatasets(object):
 
         Override configuration variables with the values in this package.
         """
-        print('bla')
         app.config.setdefault('RECORDS_DRAFT_ENDPOINTS', {}).update(config.RECORDS_DRAFT_ENDPOINTS)
         app.config.setdefault('RECORDS_REST_ENDPOINTS', {}).update(config.RECORDS_REST_ENDPOINTS)
 # TODO: facets & filters & sort

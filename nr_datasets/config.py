@@ -196,8 +196,8 @@ RECORDS_DRAFT_ENDPOINTS = {
 RECORDS_REST_ENDPOINTS = {
     'all-datasets': dict(
         pid_type=ALL_DATASET_PID_TYPE,
-        pid_minter='nr_all',
-        pid_fetcher='nr_all',
+        pid_minter='nr_datasets',
+        pid_fetcher='nr_datasets',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
         search_class=DatasetRecordsSearch,
@@ -225,8 +225,8 @@ RECORDS_REST_ENDPOINTS = {
     ),
     'community-datasets': dict(
         pid_type=ALL_DATASET_PID_TYPE + '-community-all',
-        pid_minter='nr_all',
-        pid_fetcher='nr_all',
+        pid_minter='nr_datasets',
+        pid_fetcher='nr_datasets',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
         search_class=DatasetRecordsSearch,
