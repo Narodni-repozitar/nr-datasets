@@ -9,6 +9,6 @@
 
 from __future__ import absolute_import, print_function
 
-from .json import NRDatasetMetadataSchemaV1
+from .json import NRDatasetMetadataSchemaV3
 
-__all__ = ('NRDatasetMetadataSchemaV1',)
+__all__ = ('NRDatasetMetadataSchemaV3',)

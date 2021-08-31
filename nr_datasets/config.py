@@ -12,27 +12,30 @@ from __future__ import absolute_import, print_function
 from functools import partial
 
 from elasticsearch_dsl.query import Bool, Q
-from invenio_records_rest.facets import terms_filter
+from invenio_records_rest.facets import terms_filter, range_filter
 from invenio_records_rest.utils import allow_all, deny_all
-from nr_common.links import nr_links_factory
-from nr_common.search import community_search_factory
-from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
+from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_APPROVED, STATE_PENDING_APPROVAL, \
+    STATE_DELETED
+# TODO: this needs to be updated to new common data model
+# from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
 from oarepo_communities.links import community_record_links_factory
+from oarepo_communities.permissions import update_object_permission_impl
+from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
 from oarepo_records_draft import DRAFT_IMPORTANT_FILTERS
 from oarepo_records_draft.rest import DRAFT_IMPORTANT_FACETS
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
-from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet
-from oarepo_ui.filters import nested_filter
+from oarepo_tokens.permissions import put_file_token_permission_factory
+from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, date_histogram_facet
+from oarepo_ui.filters import nested_filter, group_by_terms_filter, boolean_filter
 
-from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_APPROVED, STATE_PENDING_APPROVAL, \
-    STATE_DELETED
 from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_RECORD, \
     published_index_name, \
     DRAFT_DATASET_PID_TYPE, DRAFT_DATASET_RECORD, ALL_DATASET_PID_TYPE, ALL_DATASET_RECORD, \
     all_datasets_index_name
 from nr_datasets.record import draft_index_name
-from nr_datasets.search import DatasetRecordSearch
+from .links import nr_links_factory
+from .search import DatasetRecordsSearch
 
 _ = lambda x: x
 
@@ -54,20 +57,26 @@ RECORDS_DRAFT_ENDPOINTS = {
         'item_route': f'/<commpid({PUBLISHED_DATASET_PID_TYPE},model="datasets",record_class="'
                       f'{PUBLISHED_DATASET_RECORD}"):pid_value>',
 
-        'publish_permission_factory_imp':
-            'nr_common.permissions.publish_draft_object_permission_impl',
-        'unpublish_permission_factory_imp':
-            'nr_common.permissions.unpublish_draft_object_permission_impl',
-        'edit_permission_factory_imp': 'nr_common.permissions.update_object_permission_impl',
+        # Who can publish a draft dataset record
+        'publish_permission_factory_imp': 'oarepo_communities.permissions.publish_permission_impl',
+        # Who can unpublish (delete published & create a new draft version of)
+        # a published dataset record
+        'unpublish_permission_factory_imp': 'oarepo_communities.permissions.unpublish_permission_impl',
+        # Who can edit (create a new draft version of) a published dataset record
+        'edit_permission_factory_imp': 'oarepo_communities.permissions.unpublish_permission_impl',
+        # Who can enumerate published dataset record collection
         'list_permission_factory_imp': allow_all,
+        # Who can view an existing published dataset record detail
         'read_permission_factory_imp': allow_all,
+        # Make sure everything else is for biden
         'create_permission_factory_imp': deny_all,
         'update_permission_factory_imp': deny_all,
         'delete_permission_factory_imp': deny_all,
+
         'default_media_type': 'application/json',
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         # 'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
@@ -90,7 +99,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
         'search_factory_imp': community_search_factory,
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         'search_serializers': {
             'application/json': 'oarepo_validate:json_search',
         },
@@ -98,22 +107,25 @@ RECORDS_DRAFT_ENDPOINTS = {
             'application/json': 'oarepo_validate:json_response',
         },
 
-        'create_permission_factory_imp':
-            'nr_common.permissions.create_draft_object_permission_impl',
-        'update_permission_factory_imp':
-            'nr_common.permissions.update_draft_object_permission_impl',
-        'read_permission_factory_imp': 'nr_common.permissions.read_draft_object_permission_impl',
-        'delete_permission_factory_imp':
-            'nr_common.permissions.delete_draft_object_permission_impl',
-        'list_permission_factory_imp': 'nr_common.permissions.list_draft_object_permission_impl',
+        # Who can create a new draft dataset record
+        'create_permission_factory_imp': 'oarepo_communities.permissions.create_object_permission_impl',
+        # Who can edit an existing draft dataset record
+        'update_permission_factory_imp': 'oarepo_communities.permissions.update_object_permission_impl',
+        # Who can view an existing draft dataset record
+        'read_permission_factory_imp': 'oarepo_communities.permissions.read_object_permission_impl',
+        # Who can delete an existing draft dataset record
+        'delete_permission_factory_imp': 'oarepo_communities.permissions.delete_object_permission_impl',
+        # Who can enumerate a draft dataset record collection
+        'list_permission_factory_imp': deny_all,
+
         'record_loaders': {
             'application/json': 'oarepo_validate.json_files_loader',
             'application/json-patch+json': 'oarepo_validate.json_loader'
         },
         'files': dict(
-            put_file_factory='nr_common.permissions.put_draft_file_permission_impl',
-            get_file_factory='nr_common.permissions.get_draft_file_permission_impl',
-            delete_file_factory='nr_common.permissions.delete_draft_file_permission_impl'
+            put_file_factory=put_file_token_permission_factory(update_object_permission_impl),
+            get_file_factory='oarepo_communities.permissions.read_object_permission_impl',
+            delete_file_factory='oarepo_communities.permissions.update_object_permission_impl'
         )
 
     },
@@ -140,7 +152,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'default_media_type': 'application/json',
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         # 'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
@@ -160,7 +172,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'search_index': draft_index_name,
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
-        'search_class': DatasetRecordSearch,
+        'search_class': DatasetRecordsSearch,
         'search_serializers': {
             'application/json': 'oarepo_validate:json_search',
         },
@@ -170,12 +182,12 @@ RECORDS_DRAFT_ENDPOINTS = {
 
         'create_permission_factory_imp': deny_all,
         'update_permission_factory_imp': deny_all,
-        'read_permission_factory_imp': 'nr_common.permissions.read_draft_object_permission_impl',
+        'read_permission_factory_imp': 'oarepo_communities.permissions.read_object_permission_impl',
         'delete_permission_factory_imp': deny_all,
-        'list_permission_factory_imp': 'nr_common.permissions.list_draft_object_permission_impl',
+        'list_permission_factory_imp': deny_all,
         'files': dict(
             put_file_factory=deny_all,
-            get_file_factory='nr_common.permissions.get_draft_file_permission_impl',
+            get_file_factory='oarepo_communities.permissions.read_object_permission_impl',
             delete_file_factory=deny_all
         )
     }
@@ -188,7 +200,7 @@ RECORDS_REST_ENDPOINTS = {
         pid_fetcher='nr_all',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
-        search_class=DatasetRecordSearch,
+        search_class=DatasetRecordsSearch,
         search_index=all_datasets_index_name,
         search_serializers={
             'application/json': 'oarepo_validate:json_search',
@@ -201,7 +213,7 @@ RECORDS_REST_ENDPOINTS = {
         # not used really
         item_route=f'/datasets/'
                    f'/not-used-but-must-be-present',
-        list_permission_factory_imp='nr_common.permissions.list_all_object_permission_impl',
+        list_permission_factory_imp=allow_all,
         create_permission_factory_imp=deny_all,
         delete_permission_factory_imp=deny_all,
         update_permission_factory_imp=deny_all,
@@ -217,7 +229,7 @@ RECORDS_REST_ENDPOINTS = {
         pid_fetcher='nr_all',
         default_endpoint_prefix=True,
         record_class=ALL_DATASET_RECORD,
-        search_class=DatasetRecordSearch,
+        search_class=DatasetRecordsSearch,
         search_index=all_datasets_index_name,
         search_factory_imp=community_search_factory,
         search_serializers={
@@ -231,7 +243,7 @@ RECORDS_REST_ENDPOINTS = {
         # not used really
         item_route=f'/dataset/'
                    f'/not-used-but-must-be-present',
-        list_permission_factory_imp='nr_common.permissions.list_all_object_permission_impl',
+        list_permission_factory_imp=allow_all,
         create_permission_factory_imp=deny_all,
         delete_permission_factory_imp=deny_all,
         update_permission_factory_imp=deny_all,
@@ -262,7 +274,7 @@ def state_terms_filter(field):
 
 
 DATASETS_FILTERS = {
-    _('state'): state_terms_filter('state'),
+    _('oarepo:recordStatus'): state_terms_filter('oarepo:recordStatus'),
     _('keywords'): terms_filter('keywords'),
     _('languages'): nested_filter('languages', language_aware_text_terms_filter('languages.title')),
     _('creators'): nested_filter('creators.person_or_org', terms_filter('creators.person_or_org.name')),
@@ -270,35 +282,121 @@ DATASETS_FILTERS = {
     _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
 }
 
+# TODO: merge this to nr-generic
+FILTERS = {
+    _('creators'): terms_filter('person.keyword'),
+    _('accessRights'): nested_filter("accessRights",
+                                     group_by_terms_filter('accessRights.title.en.raw', {
+                                         "true": "open access",
+                                         1: "open access",
+                                         True: "open access",
+                                         "1": "open access",
+                                         False: ["embargoed access", "restricted access",
+                                                 "metadata only access"],
+                                         0: ["embargoed access", "restricted access",
+                                             "metadata only access"],
+                                         "false": ["embargoed access", "restricted access",
+                                                   "metadata only access"],
+                                         "0": ["embargoed access", "restricted access",
+                                               "metadata only access"],
+                                     })),
+    _('resourceType'): nested_filter('resourceType',
+                                     language_aware_text_terms_filter('resourceType.title')),
+    _('keywords'): language_aware_text_terms_filter('keywords'),
+    _('subjectCategories'): nested_filter('subjectCategories',
+                                          language_aware_text_terms_filter('subjectCategories.title')),
+    _('language'): nested_filter('language',
+                                 language_aware_text_terms_filter('language.title')),
+    _('dateCreated'): range_filter('dateCreated.date'),
+    _('dateAvailable'): range_filter('dateAvailable.date'),
+    _('dateModified'): range_filter('dateModified.date'),
+    _('dateCollected'): range_filter('dateCollected.date'),
+    _('dateWithdrawn'): range_filter('dateWithdrawn.date'),
+    _('dateValidTo'): range_filter('dateValidTo.date'),
+}
+
+# TODO: merge this to nr-generic
+CURATOR_FILTERS = {
+    _('accessRightsCurator'): nested_filter('accessRights', language_aware_text_terms_filter('accessRights.title')),
+    _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
+    _('fundingReferences'): nested_filter('fundingReferences',
+                                          nested_filter('fundingReferences.funder',
+                                                        language_aware_text_terms_filter(
+                                                            'fundingReferences.funder.title'))),
+    # TODO: what to use here
+    # _('entities'): nested_filter('entities', language_aware_text_terms_filter('entities.title')),
+    _('isGL'): boolean_filter('isGL')
+}
+
 DATASETS_FACETS = {
-    'state': translate_facet(term_facet('state', missing=STATE_EDITING), possible_values=[
-        _(STATE_EDITING),
-        _(STATE_PENDING_APPROVAL),
-        _(STATE_APPROVED),
-        _(STATE_PUBLISHED),
-        _(STATE_DELETED)
-    ]),
-    'languages': nested_facet('languages', language_aware_text_term_facet('languages.title')),
+    'oarepo:recordStatus': translate_facet(
+        term_facet('oarepo:recordStatus', missing=STATE_EDITING),
+        possible_values=[
+            _(STATE_EDITING),
+            _(STATE_PENDING_APPROVAL),
+            _(STATE_APPROVED),
+            _(STATE_PUBLISHED),
+            _(STATE_DELETED)
+        ]),
+    'language': nested_facet('language', language_aware_text_term_facet('language.title')),
     'keywords': term_facet('keywords'),
-    'creators': nested_facet('creators.person_or_org', term_facet('creators.person_or_org.name')),
-    'affiliations': nested_facet('creators.affiliations', term_facet('creators.affiliations.name')),
+    'creators': nested_facet('creators', term_facet('creators.authority.fullName')),
+    # TODO: where to take affiliations from?
+    # 'affiliations': nested_facet('creators.affiliations', term_facet('creators.affiliations.name')),
     'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
+}
+
+# TODO: merge this to nr-generic
+FACETS = {
+    'creators': nested_facet('creators', term_facet('creators.authority.fullName')),
+    'accessRights': nested_facet("accessRights", language_aware_text_term_facet('accessRights.title')),
+    'resourceType': nested_facet('resourceType', language_aware_text_term_facet('resourceType.title')),
+    'keywords': language_aware_text_term_facet('keywords'),
+    'subjectCategories': nested_facet('subjectCategories', language_aware_text_term_facet('subjectCategories.title')),
+    'language': nested_facet('language', language_aware_text_term_facet('language.title')),
+    'dateCreated': date_histogram_facet('dateCreated.date'),
+}
+# TODO: merge this to nr-generic
+CURATOR_FACETS = {
+    'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
+    'fundingReferences': nested_facet('fundingReferences', nested_facet('fundingReferences.funder',
+                                                                        language_aware_text_term_facet(
+                                                                            'fundingReferences.funder.title'))),
+    # TODO: what to use here
+    # 'entities': nested_facet('entities', language_aware_text_term_facet('entities.title')),
+    'dateAvailable': date_histogram_facet('dateAvailable.date'),
+    'dateModified': date_histogram_facet('dateModified.date'),
+    'dateCollected': date_histogram_facet('dateCollected.date'),
+    'dateWithdrawn': date_histogram_facet('dateWithdrawn.date'),
+    'dateValidTo': date_histogram_facet('dateValidTo.date'),
+    'accessRightsCurator': nested_facet('accessRights', language_aware_text_term_facet('accessRights.title'))
 }
 
 RECORDS_REST_FACETS = {
     draft_index_name: {
         "aggs": translate_facets(
-            {**DATASETS_FACETS, **FACETS, **CURATOR_FACETS, **DRAFT_IMPORTANT_FACETS},
+            {**DATASETS_FACETS,
+             **FACETS,
+             **CURATOR_FACETS,
+             **DRAFT_IMPORTANT_FACETS},
             label='{facet_key}',
             value='{value_key}'),
-        "filters": {**DATASETS_FILTERS, **FILTERS, **CURATOR_FILTERS, **DRAFT_IMPORTANT_FILTERS}
+        "filters": {**DATASETS_FILTERS,
+                    **FILTERS,
+                    **CURATOR_FILTERS,
+                    **DRAFT_IMPORTANT_FILTERS}
     },
     all_datasets_index_name: {
         "aggs": translate_facets(
-            {**DATASETS_FACETS, **FACETS, **CURATOR_FACETS, **DRAFT_IMPORTANT_FACETS},
+            {**DATASETS_FACETS,
+             # **FACETS, **CURATOR_FACETS,
+             **DRAFT_IMPORTANT_FACETS},
             label='{facet_key}',
             value='{value_key}'),
-        "filters": {**DATASETS_FILTERS, **FILTERS, **CURATOR_FILTERS, **DRAFT_IMPORTANT_FILTERS}
+        "filters": {**DATASETS_FILTERS,
+                    **FILTERS,
+                    **CURATOR_FILTERS,
+                    **DRAFT_IMPORTANT_FILTERS}
     },
 }
 

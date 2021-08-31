@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "techlib-nr-datasets"
-version = "1.0.a6"
+version = "1.0.0a7"
 description = "Czech National Repository datasets data model."
 license = "MIT"
 keywords = ["Czech", "Nation", "Repository", "Invenio", "datasets"]
@@ -13,13 +13,13 @@ packages = [{include='nr_datasets'}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-techlib-nr-common = "^3.0.0a"
-techlib-nr-datasets-metadata  = { version="^1.0.0a", allow-prereleases=true }
+techlib-nr-datasets-metadata  = "^3.0"
 oarepo = "^3.3.59"
+oarepo-tokens = "^0.1.7"
 
 [tool.poetry.dev-dependencies]
 oarepo = "^3.3"
-oarepo-invenio-model = "^2.0.1"
+oarepo-invenio-model = "^3.0"
 oarepo-multilingual = "^2.2.0"
 oarepo-taxonomies = "^3.0.0a4"
 oarepo-records-draft = "^5.0.0a7"
@@ -28,9 +28,8 @@ oarepo-validate = "^1.2.8"
 pytest = "^5.0.0"
 pytest-cov = "^2.10.1"
 pytest-runner = "^5.2"
-oarepo-fsm = "^1.6"
-oarepo-communities = "^2.3"
-techlib-nr-generic = "^1.0.0-alpha.1"
+oarepo-fsm = "^2.0"
+oarepo-communities = "^3.0"
 oarepo-model-builder = "^0.1.7"
 
 [tool.poetry.plugins]
