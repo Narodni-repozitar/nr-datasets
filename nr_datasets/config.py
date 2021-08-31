@@ -389,7 +389,8 @@ RECORDS_REST_FACETS = {
     all_datasets_index_name: {
         "aggs": translate_facets(
             {**DATASETS_FACETS,
-             # **FACETS, **CURATOR_FACETS,
+             **FACETS,
+             **CURATOR_FACETS,
              **DRAFT_IMPORTANT_FACETS},
             label='{facet_key}',
             value='{value_key}'),
