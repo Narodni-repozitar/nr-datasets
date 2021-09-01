@@ -27,7 +27,7 @@ from oarepo_records_draft.rest import DRAFT_IMPORTANT_FACETS
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
 from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, date_histogram_facet
-from oarepo_ui.filters import nested_filter, group_by_terms_filter, boolean_filter
+from oarepo_ui.filters import nested_filter
 
 from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_RECORD, \
     published_index_name, \
@@ -277,29 +277,16 @@ DATASETS_FILTERS = {
     _('oarepo:recordStatus'): state_terms_filter('oarepo:recordStatus'),
     _('keywords'): terms_filter('keywords'),
     _('languages'): nested_filter('languages', language_aware_text_terms_filter('languages.title')),
-    _('creators'): nested_filter('creators.person_or_org', terms_filter('creators.person_or_org.name')),
+    _('creators'): terms_filter('creators.fullName'),
     _('affiliations'): nested_filter('creators.affiliations', terms_filter('creators.affiliations.name')),
     _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
 }
 
 # TODO: merge this to nr-generic
 FILTERS = {
-    _('creators'): terms_filter('person.keyword'),
+    _('creators'): terms_filter('creators.fullName'),
     _('accessRights'): nested_filter("accessRights",
-                                     group_by_terms_filter('accessRights.title.en.raw', {
-                                         "true": "open access",
-                                         1: "open access",
-                                         True: "open access",
-                                         "1": "open access",
-                                         False: ["embargoed access", "restricted access",
-                                                 "metadata only access"],
-                                         0: ["embargoed access", "restricted access",
-                                             "metadata only access"],
-                                         "false": ["embargoed access", "restricted access",
-                                                   "metadata only access"],
-                                         "0": ["embargoed access", "restricted access",
-                                               "metadata only access"],
-                                     })),
+                                     language_aware_text_terms_filter('accessRights.title')),
     _('resourceType'): nested_filter('resourceType',
                                      language_aware_text_terms_filter('resourceType.title')),
     _('keywords'): language_aware_text_terms_filter('keywords'),
@@ -307,25 +294,20 @@ FILTERS = {
                                           language_aware_text_terms_filter('subjectCategories.title')),
     _('language'): nested_filter('language',
                                  language_aware_text_terms_filter('language.title')),
-    _('dateCreated'): range_filter('dateCreated.date'),
-    _('dateAvailable'): range_filter('dateAvailable.date'),
-    _('dateModified'): range_filter('dateModified.date'),
-    _('dateCollected'): range_filter('dateCollected.date'),
-    _('dateWithdrawn'): range_filter('dateWithdrawn.date'),
-    _('dateValidTo'): range_filter('dateValidTo.date'),
+    _('dateCreated'): range_filter('dateCreated'),
+    _('dateAvailable'): range_filter('dateAvailable'),
+    _('dateModified'): range_filter('dateModified'),
+    _('dateCollected'): range_filter('dateCollected'),
+    _('dateWithdrawn'): range_filter('dateWithdrawn'),
+    _('dateValidTo'): range_filter('dateValidTo'),
 }
 
 # TODO: merge this to nr-generic
 CURATOR_FILTERS = {
-    _('accessRightsCurator'): nested_filter('accessRights', language_aware_text_terms_filter('accessRights.title')),
     _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
-    _('fundingReferences'): nested_filter('fundingReferences',
-                                          nested_filter('fundingReferences.funder',
-                                                        language_aware_text_terms_filter(
-                                                            'fundingReferences.funder.title'))),
-    # TODO: what to use here
-    # _('entities'): nested_filter('entities', language_aware_text_terms_filter('entities.title')),
-    _('isGL'): boolean_filter('isGL')
+    _('fundingReferences'): nested_filter('fundingReferences.funder',
+                                          language_aware_text_terms_filter(
+                                              'fundingReferences.funder.title')),
 }
 
 DATASETS_FACETS = {
@@ -339,37 +321,32 @@ DATASETS_FACETS = {
             _(STATE_DELETED)
         ]),
     'language': nested_facet('language', language_aware_text_term_facet('language.title')),
-    'keywords': term_facet('keywords'),
-    'creators': nested_facet('creators', term_facet('creators.authority.fullName')),
-    # TODO: where to take affiliations from?
-    # 'affiliations': nested_facet('creators.affiliations', term_facet('creators.affiliations.name')),
+    'keywords': language_aware_text_term_facet('keywords'),
+    'creators': term_facet('creators.fullName'),
+    'affiliation': nested_facet('creators.affiliation', language_aware_text_term_facet('creators.affiliation.title')),
     'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
 }
 
 # TODO: merge this to nr-generic
 FACETS = {
-    'creators': nested_facet('creators', term_facet('creators.authority.fullName')),
+    'creators': term_facet('creators.fullName'),
     'accessRights': nested_facet("accessRights", language_aware_text_term_facet('accessRights.title')),
     'resourceType': nested_facet('resourceType', language_aware_text_term_facet('resourceType.title')),
     'keywords': language_aware_text_term_facet('keywords'),
     'subjectCategories': nested_facet('subjectCategories', language_aware_text_term_facet('subjectCategories.title')),
     'language': nested_facet('language', language_aware_text_term_facet('language.title')),
-    'dateCreated': date_histogram_facet('dateCreated.date'),
+    'dateCreated': date_histogram_facet('dateCreated'),
 }
 # TODO: merge this to nr-generic
 CURATOR_FACETS = {
     'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
-    'fundingReferences': nested_facet('fundingReferences', nested_facet('fundingReferences.funder',
-                                                                        language_aware_text_term_facet(
-                                                                            'fundingReferences.funder.title'))),
-    # TODO: what to use here
-    # 'entities': nested_facet('entities', language_aware_text_term_facet('entities.title')),
-    'dateAvailable': date_histogram_facet('dateAvailable.date'),
-    'dateModified': date_histogram_facet('dateModified.date'),
-    'dateCollected': date_histogram_facet('dateCollected.date'),
-    'dateWithdrawn': date_histogram_facet('dateWithdrawn.date'),
-    'dateValidTo': date_histogram_facet('dateValidTo.date'),
-    'accessRightsCurator': nested_facet('accessRights', language_aware_text_term_facet('accessRights.title'))
+    'fundingReferences': nested_facet('fundingReferences.funder',
+                                      language_aware_text_term_facet('fundingReferences.funder.title')),
+    'dateAvailable': date_histogram_facet('dateAvailable'),
+    'dateModified': date_histogram_facet('dateModified'),
+    'dateCollected': date_histogram_facet('dateCollected'),
+    'dateWithdrawn': date_histogram_facet('dateWithdrawn'),
+    'dateValidTo': date_histogram_facet('dateValidTo'),
 }
 
 RECORDS_REST_FACETS = {
