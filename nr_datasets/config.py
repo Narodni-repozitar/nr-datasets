@@ -354,8 +354,9 @@ RECORDS_REST_FACETS = {
         "aggs": translate_facets(
             {**DATASETS_FACETS,
              **FACETS,
-             **CURATOR_FACETS,
-             **DRAFT_IMPORTANT_FACETS},
+             # **CURATOR_FACETS,
+             # **DRAFT_IMPORTANT_FACETS
+            },
             label='{facet_key}',
             value='{value_key}'),
         "filters": {**DATASETS_FILTERS,
@@ -367,8 +368,9 @@ RECORDS_REST_FACETS = {
         "aggs": translate_facets(
             {**DATASETS_FACETS,
              **FACETS,
-             **CURATOR_FACETS,
-             **DRAFT_IMPORTANT_FACETS},
+             # **CURATOR_FACETS,
+             # **DRAFT_IMPORTANT_FACETS
+            },
             label='{facet_key}',
             value='{value_key}'),
         "filters": {**DATASETS_FILTERS,
