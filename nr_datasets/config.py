@@ -23,7 +23,6 @@ from oarepo_communities.permissions import update_object_permission_impl
 from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
 from oarepo_records_draft import DRAFT_IMPORTANT_FILTERS
-from oarepo_records_draft.rest import DRAFT_IMPORTANT_FACETS
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
 from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, date_histogram_facet
@@ -356,7 +355,7 @@ RECORDS_REST_FACETS = {
              **FACETS,
              # **CURATOR_FACETS,
              # **DRAFT_IMPORTANT_FACETS
-            },
+             },
             label='{facet_key}',
             value='{value_key}'),
         "filters": {**DATASETS_FILTERS,
@@ -370,7 +369,7 @@ RECORDS_REST_FACETS = {
              **FACETS,
              # **CURATOR_FACETS,
              # **DRAFT_IMPORTANT_FACETS
-            },
+             },
             label='{facet_key}',
             value='{value_key}'),
         "filters": {**DATASETS_FILTERS,
