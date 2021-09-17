@@ -5,7 +5,7 @@ from oarepo_communities.search import CommunitySearch
 class DatasetRecordsSearch(CommunitySearch):
     LIST_SOURCE_FIELDS = [
         'InvenioID', 'oarepo:validity.valid', 'oarepo:draft',
-        'titles', 'abstract', 'creators', 'dateCreated', 'resourceType', 'rights',
+        'titles', 'abstract', 'creators', 'dateCreated', 'resourceType', 'accessRights',
         'contributors', 'keywords', 'subjectCategories', 'oarepo:recordStatus', 'language',
         'oarepo:primaryCommunity', 'oarepo:secondaryCommunities', '$schema', '_files'
     ]
