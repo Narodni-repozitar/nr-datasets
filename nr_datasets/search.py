@@ -6,7 +6,7 @@ class DatasetRecordsSearch(CommunitySearch):
     LIST_SOURCE_FIELDS = [
         'InvenioID', 'oarepo:validity.valid', 'oarepo:draft',
         'titles', 'abstract', 'creators', 'dateCreated', 'dateAvailable', 'resourceType', 'accessRights', 'rights',
-        'contributors', 'keywords', 'subjectCategories', 'oarepo:recordStatus', 'language',
+        'contributors', 'keywords', 'subjectCategories', 'relatedItems', 'oarepo:recordStatus', 'language',
         'oarepo:primaryCommunity', 'oarepo:secondaryCommunities', '$schema', '_files'
     ]
     HIGHLIGHT_FIELDS = {
