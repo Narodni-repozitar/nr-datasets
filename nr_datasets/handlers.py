@@ -13,6 +13,7 @@ from flask import make_response, jsonify
 from flask_restful import abort
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier
+from oarepo_doi_generator.api import doi_approved, doi_request
 from oarepo_records_draft import current_drafts
 from oarepo_records_draft.exceptions import InvalidRecordException
 from oarepo_records_draft.ext import PublishedDraftRecordPair
@@ -24,6 +25,8 @@ from .constants import DRAFT_DATASET_PID_TYPE, PUBLISHED_DATASET_PID_TYPE
 def handle_request_approval(sender, **kwargs):
     if isinstance(sender, DraftDatasetRecord):
         print('request draft dataset approval', sender)
+        if kwargs['doi_request']:
+            doi_request(sender)
         # TODO: send mail notification to community curators
 
 
@@ -86,6 +89,7 @@ def handle_revert_approval(sender, force=False, **kwargs):
 
 def handle_publish(sender, **kwargs):
     if isinstance(sender, PublishedDatasetRecord):
+        doi_approved(sender, 'datst', True)
         print('making dataset public', sender)
         # TODO: send mail notification to interested people
 

@@ -35,6 +35,7 @@ pytest-runner = "^5.2"
 oarepo-fsm = "^2.0"
 oarepo-communities = "^3.0"
 oarepo-model-builder = "^0.1.7"
+oarepo-doi-generator = "^1.0.3"
 
 [tool.poetry.plugins]
 [tool.poetry.plugins."invenio_base.apps"]
