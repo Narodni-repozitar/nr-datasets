@@ -8,6 +8,7 @@
 """Record state transition handler functions."""
 import traceback
 from typing import List
+from datetime import datetime
 
 from flask import make_response, jsonify
 from flask_restful import abort
@@ -88,6 +89,8 @@ def handle_publish(sender, **kwargs):
     if isinstance(sender, PublishedDatasetRecord):
         print('making dataset public', sender)
         # TODO: send mail notification to interested people
+        if 'dateAvailable' not in sender or not sender.get('dateAvailable'):
+            sender['dateAvailable'] = datetime.today().strftime('%Y-%m-%d')
 
 
 def handle_unpublish(sender, **kwargs):
