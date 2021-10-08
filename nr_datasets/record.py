@@ -7,6 +7,8 @@ from oarepo_communities.record import CommunityRecordMixin
 from oarepo_invenio_model import InheritedSchemaRecordMixin
 from oarepo_records_draft.record import InvalidRecordAllowedMixin, DraftRecordMixin
 from oarepo_validate import SchemaKeepingRecordMixin, MarshmallowValidatedRecordMixin, FilesKeepingRecordMixin
+from oarepo_tokens.views import TokenEnabledDraftRecordMixin
+from oarepo_communities.permissions import update_object_permission_impl
 
 from .constants import published_index_name, draft_index_name, \
     all_datasets_index_name, DATASETS_PREFERRED_SCHEMA, DATASETS_ALLOWED_SCHEMAS
@@ -37,8 +39,9 @@ class PublishedDatasetRecord(InvalidRecordAllowedMixin, DatasetBaseRecord):
                        _external=True)
 
 
-class DraftDatasetRecord(DraftRecordMixin, DatasetBaseRecord):
+class DraftDatasetRecord(DraftRecordMixin, TokenEnabledDraftRecordMixin, DatasetBaseRecord):
     index_name = draft_index_name
+    CREATE_TOKEN_PERMISSION = update_object_permission_impl
 
     @property
     def canonical_url(self):
