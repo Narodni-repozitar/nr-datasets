@@ -304,7 +304,7 @@ ALL_FILTERS = {
     'language': nested_filter('language',
                               language_aware_text_terms_filter('language.title')),
     'keywords': language_aware_text_terms_filter('keywords'),
-    'affiliation': nested_filter('creators.affiliation', terms_filter('creators.affiliation.title')),
+    'affiliation': nested_filter('creators.affiliation', language_aware_text_terms_filter('creators.affiliation.title')),
     'subjectCategories': nested_filter('subjectCategories',
                                        language_aware_text_terms_filter('subjectCategories.title')),
     # 'fundingReferences': nested_filter('fundingReferences.funder',
