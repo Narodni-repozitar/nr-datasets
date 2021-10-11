@@ -12,7 +12,7 @@ from __future__ import absolute_import, print_function
 from functools import partial
 
 from elasticsearch_dsl.query import Bool, Q
-from invenio_records_rest.facets import terms_filter, range_filter
+from invenio_records_rest.facets import terms_filter
 from invenio_records_rest.utils import allow_all, deny_all
 from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_APPROVED, STATE_PENDING_APPROVAL, \
     STATE_DELETED
@@ -22,10 +22,9 @@ from oarepo_communities.links import community_record_links_factory
 from oarepo_communities.permissions import update_object_permission_impl
 from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
-from oarepo_records_draft import DRAFT_IMPORTANT_FILTERS
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
-from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, date_histogram_facet
+from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, RoleFacets
 from oarepo_ui.filters import nested_filter
 
 from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_RECORD, \
@@ -262,7 +261,7 @@ def state_terms_filter(field):
                 Q('terms', **{field: values}),
                 Bool(
                     must_not=[
-                        Q('exists', field='state')
+                        Q('exists', field='oarepo:recordStatus')
                     ]
                 )
             ], minimum_should_match=1)
@@ -272,44 +271,12 @@ def state_terms_filter(field):
     return inner
 
 
-DATASETS_FILTERS = {
-    _('oarepo:recordStatus'): state_terms_filter('oarepo:recordStatus'),
-    _('keywords'): terms_filter('keywords'),
-    _('languages'): nested_filter('languages', language_aware_text_terms_filter('languages.title')),
-    _('creators'): terms_filter('creators.fullName'),
-    _('affiliations'): nested_filter('creators.affiliations', terms_filter('creators.affiliations.name')),
-    _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
-}
-
-# TODO: merge this to nr-generic
-FILTERS = {
-    _('creators'): terms_filter('creators.fullName'),
-    _('accessRights'): nested_filter("accessRights",
-                                     language_aware_text_terms_filter('accessRights.title')),
-    _('resourceType'): nested_filter('resourceType',
-                                     language_aware_text_terms_filter('resourceType.title')),
-    _('keywords'): language_aware_text_terms_filter('keywords'),
-    _('subjectCategories'): nested_filter('subjectCategories',
-                                          language_aware_text_terms_filter('subjectCategories.title')),
-    _('language'): nested_filter('language',
-                                 language_aware_text_terms_filter('language.title')),
-    _('dateCreated'): range_filter('dateCreated'),
-    _('dateAvailable'): range_filter('dateAvailable'),
-    _('dateModified'): range_filter('dateModified'),
-    _('dateCollected'): range_filter('dateCollected'),
-    _('dateWithdrawn'): range_filter('dateWithdrawn'),
-    _('dateValidTo'): range_filter('dateValidTo'),
-}
-
-# TODO: merge this to nr-generic
-CURATOR_FILTERS = {
-    _('rights'): nested_filter('rights', language_aware_text_terms_filter('rights.title')),
-    _('fundingReferences'): nested_filter('fundingReferences.funder',
-                                          language_aware_text_terms_filter(
-                                              'fundingReferences.funder.title')),
-}
-
-DATASETS_FACETS = {
+ALL_FACETS = {
+    'creators': term_facet('creators.fullName'),
+    'language': nested_facet('language', language_aware_text_term_facet('language.title')),
+    'keywords': language_aware_text_term_facet('keywords'),
+    'affiliation': nested_facet('creators.affiliation', language_aware_text_term_facet('creators.affiliation.title')),
+    'subjectCategories': nested_facet('subjectCategories', language_aware_text_term_facet('subjectCategories.title')),
     'oarepo:recordStatus': translate_facet(
         term_facet('oarepo:recordStatus', missing=STATE_EDITING),
         possible_values=[
@@ -319,87 +286,92 @@ DATASETS_FACETS = {
             _(STATE_PUBLISHED),
             _(STATE_DELETED)
         ]),
-    'language': nested_facet('language', language_aware_text_term_facet('language.title')),
-    'keywords': language_aware_text_term_facet('keywords'),
-    'creators': term_facet('creators.fullName'),
-    'affiliation': nested_facet('creators.affiliation', language_aware_text_term_facet('creators.affiliation.title')),
-    'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
+    # TODO: implement date range facets in UI
+    # 'dateAvailable': date_histogram_facet('dateAvailable'),
+    # 'dateModified': date_histogram_facet('dateModified'),
+    # 'dateCollected': date_histogram_facet('dateCollected'),
+    # 'dateWithdrawn': date_histogram_facet('dateWithdrawn'),
+    # 'dateValidTo': date_histogram_facet('dateValidTo'),
+    # 'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
+    # 'accessRights': nested_facet("accessRights", language_aware_text_term_facet('accessRights.title')),
+    # 'resourceType': nested_facet('resourceType', language_aware_text_term_facet('resourceType.title')),
+    # 'fundingReferences': nested_facet('fundingReferences.funder',
+    #                                  language_aware_text_term_facet('fundingReferences.funder.title')),
 }
 
-# TODO: merge this to nr-generic
-FACETS = {
-    'creators': term_facet('creators.fullName'),
-    'accessRights': nested_facet("accessRights", language_aware_text_term_facet('accessRights.title')),
-    'resourceType': nested_facet('resourceType', language_aware_text_term_facet('resourceType.title')),
-    'keywords': language_aware_text_term_facet('keywords'),
-    'subjectCategories': nested_facet('subjectCategories', language_aware_text_term_facet('subjectCategories.title')),
-    'language': nested_facet('language', language_aware_text_term_facet('language.title')),
-    'dateCreated': date_histogram_facet('dateCreated'),
+ALL_FILTERS = {
+    'creators': terms_filter('creators.fullName'),
+    'language': nested_filter('language',
+                              language_aware_text_terms_filter('language.title')),
+    'keywords': language_aware_text_terms_filter('keywords'),
+    'affiliation': nested_filter('creators.affiliation', language_aware_text_terms_filter('creators.affiliation.title')),
+    'subjectCategories': nested_filter('subjectCategories',
+                                       language_aware_text_terms_filter('subjectCategories.title')),
+    # 'fundingReferences': nested_filter('fundingReferences.funder',
+    #                                    language_aware_text_terms_filter('fundingReferences.funder.title')),
+    'oarepo:recordStatus': state_terms_filter('oarepo:recordStatus'),
+    # TODO: implement date range facets in UI
+    # 'dateAvailable': range_filter('dateAvailable'),
+    # 'dateModified': range_filter('dateModified'),
+    # 'dateCollected': range_filter('dateCollected'),
+    # 'dateWithdrawn': range_filter('dateWithdrawn'),
+    # 'dateValidTo': range_filter('dateValidTo'),
+    # 'rights': nested_filter('rights', language_aware_text_terms_filter('rights.title')),
 }
-# TODO: merge this to nr-generic
-CURATOR_FACETS = {
-    'rights': nested_facet('rights', language_aware_text_term_facet('rights.title')),
-    'fundingReferences': nested_facet('fundingReferences.funder',
-                                      language_aware_text_term_facet('fundingReferences.funder.title')),
-    'dateAvailable': date_histogram_facet('dateAvailable'),
-    'dateModified': date_histogram_facet('dateModified'),
-    'dateCollected': date_histogram_facet('dateCollected'),
-    'dateWithdrawn': date_histogram_facet('dateWithdrawn'),
-    'dateValidTo': date_histogram_facet('dateValidTo'),
+
+ANONYMOUS_FACETS = ['creators', 'language', 'keywords', 'affiliation', 'subjectCategories']
+AUTHENTICATED_FACETS = ['oarepo:recordStatus'] + ANONYMOUS_FACETS
+
+DEFAULT_SORT_OPTIONS = {
+    'alphabetical': {
+        'title': 'alphabetical',
+        'fields': [
+            'title.cs.raw'
+        ],
+        'default_order': 'asc',
+        'order': 1
+    },
+    'best_match': {
+        'title': 'Best match',
+        'fields': ['_score'],
+        'default_order': 'desc',
+        'order': 1,
+    }
 }
+
+
+def rest_facets_config_factory(facets_list):
+    return {
+        "aggs": translate_facets(
+            {k: ALL_FACETS[k] for k in ALL_FACETS.keys() & set(facets_list)},
+            label='{facet_key}',
+            value='{value_key}'),
+        "filters": {k: ALL_FILTERS[k] for k in ALL_FILTERS.keys() & set(facets_list)}
+    }
+
 
 RECORDS_REST_FACETS = {
-    draft_index_name: {
-        "aggs": translate_facets(
-            {**DATASETS_FACETS,
-             **FACETS,
-             # **CURATOR_FACETS,
-             # **DRAFT_IMPORTANT_FACETS
-             },
-            label='{facet_key}',
-            value='{value_key}'),
-        "filters": {**DATASETS_FILTERS,
-                    **FILTERS,
-                    **CURATOR_FILTERS,
-                    **DRAFT_IMPORTANT_FILTERS}
-    },
-    all_datasets_index_name: {
-        "aggs": translate_facets(
-            {**DATASETS_FACETS,
-             **FACETS,
-             # **CURATOR_FACETS,
-             # **DRAFT_IMPORTANT_FACETS
-             },
-            label='{facet_key}',
-            value='{value_key}'),
-        "filters": {**DATASETS_FILTERS,
-                    **FILTERS,
-                    **CURATOR_FILTERS,
-                    **DRAFT_IMPORTANT_FILTERS}
-    },
+    draft_index_name: RoleFacets(
+        anonymous={**rest_facets_config_factory(ANONYMOUS_FACETS)},
+        authenticated={**rest_facets_config_factory(AUTHENTICATED_FACETS)}
+    ),
+    all_datasets_index_name: RoleFacets(
+        anonymous={**rest_facets_config_factory(ANONYMOUS_FACETS)},
+        authenticated={**rest_facets_config_factory(AUTHENTICATED_FACETS)}
+    )
 }
 
 RECORDS_REST_SORT_OPTIONS = {
-    draft_index_name: {
-        'alphabetical': {
-            'title': 'alphabetical',
-            'fields': [
-                'title.cs.raw'
-            ],
-            'default_order': 'asc',
-            'order': 1
-        },
-        'best_match': {
-            'title': 'Best match',
-            'fields': ['_score'],
-            'default_order': 'desc',
-            'order': 1,
-        }
-    }
+    draft_index_name: {**DEFAULT_SORT_OPTIONS},
+    all_datasets_index_name: {**DEFAULT_SORT_OPTIONS}
 }
 
 RECORDS_REST_DEFAULT_SORT = {
     draft_index_name: {
+        'query': 'best_match',
+        'noquery': 'best_match'
+    },
+    all_datasets_index_name: {
         'query': 'best_match',
         'noquery': 'best_match'
     }
