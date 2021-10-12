@@ -1,6 +1,7 @@
 from flask import url_for
 from invenio_records_files.api import Record
 from oarepo_fsm.mixins import FSMMixin
+from oarepo_communities.constants import STATE_EDITING
 from oarepo_communities.converters import CommunityPIDValue
 from oarepo_communities.proxies import current_oarepo_communities
 from oarepo_communities.record import CommunityRecordMixin
@@ -25,6 +26,7 @@ class DatasetBaseRecord(SchemaKeepingRecordMixin,
     ALLOWED_SCHEMAS = DATASETS_ALLOWED_SCHEMAS
     PREFERRED_SCHEMA = DATASETS_PREFERRED_SCHEMA
     MARSHMALLOW_SCHEMA = NRDatasetMetadataSchemaV3
+    INITIAL_STATE = STATE_EDITING
 
 
 class PublishedDatasetRecord(InvalidRecordAllowedMixin, DatasetBaseRecord):
