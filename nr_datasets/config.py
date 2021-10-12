@@ -19,7 +19,7 @@ from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_A
 # TODO: this needs to be updated to new common data model
 # from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
 from oarepo_communities.links import community_record_links_factory
-from oarepo_communities.permissions import update_object_permission_impl
+from oarepo_communities.permissions import update_object_permission_impl, read_object_permission_impl
 from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter, \
     language_aware_sort_field
@@ -123,7 +123,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         },
         'files': dict(
             put_file_factory=put_file_token_permission_factory(update_object_permission_impl),
-            get_file_factory='oarepo_communities.permissions.read_object_permission_impl',
+            get_file_factory=put_file_token_permission_factory(read_object_permission_impl),
             delete_file_factory='oarepo_communities.permissions.update_object_permission_impl'
         )
 
