@@ -21,7 +21,8 @@ from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_A
 from oarepo_communities.links import community_record_links_factory
 from oarepo_communities.permissions import update_object_permission_impl, read_object_permission_impl
 from oarepo_communities.search import community_search_factory
-from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
+from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter, \
+    language_aware_sort_field
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
 from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, RoleFacets
@@ -304,7 +305,8 @@ ALL_FILTERS = {
     'language': nested_filter('language',
                               language_aware_text_terms_filter('language.title')),
     'keywords': language_aware_text_terms_filter('keywords'),
-    'affiliation': nested_filter('creators.affiliation', language_aware_text_terms_filter('creators.affiliation.title')),
+    'affiliation': nested_filter('creators.affiliation',
+                                 language_aware_text_terms_filter('creators.affiliation.title')),
     'subjectCategories': nested_filter('subjectCategories',
                                        language_aware_text_terms_filter('subjectCategories.title')),
     # 'fundingReferences': nested_filter('fundingReferences.funder',
@@ -322,21 +324,53 @@ ALL_FILTERS = {
 ANONYMOUS_FACETS = ['creators', 'language', 'keywords', 'affiliation', 'subjectCategories']
 AUTHENTICATED_FACETS = ['oarepo:recordStatus'] + ANONYMOUS_FACETS
 
+sort_by_relevance = {'best_match': {
+    'title': 'relevance',
+    'fields': ['_score'],
+    'order': 1
+}}
+
+sort_by_title = {'by_titles': {
+    'title': 'titles',
+    'fields': [language_aware_sort_field('titles.title')],
+    'order': 2
+}}
+
+sort_by_date_available = {'by_available': {
+    'title': 'dateAvailable',
+    'fields': ['dateAvailable'],
+    'order': 3
+}}
+
+sort_by_date_created = {'by_created_{order}': {
+    'title': 'dateCreated',
+    'fields': ['dateCreated'],
+    'order': 4
+}}
+
+
+def sort_by_status():
+    return {f'by_record_status_{order}': {
+        'fields': [{"_script": {
+            "type": "number",
+            "script": {
+                "inline": f'doc["oarepo:recordStatus"].size() > 0 ? params.sortOrder.indexOf(doc['
+                          f'"oarepo:recordStatus"].value): {0 if order == "asc" else len(sortOrder) - 1}',
+                "params": {
+                    "sortOrder": sortOrder
+                }
+            }
+        }}]
+    } for order, sortOrder in [('desc', ["published", "approved", "pending-approval", "editing"]),
+                               ('asc', ["editing", "pending-approval", "approved", "published"])]}
+
+
 DEFAULT_SORT_OPTIONS = {
-    'alphabetical': {
-        'title': 'alphabetical',
-        'fields': [
-            'title.cs.raw'
-        ],
-        'default_order': 'asc',
-        'order': 1
-    },
-    'best_match': {
-        'title': 'Best match',
-        'fields': ['_score'],
-        'default_order': 'desc',
-        'order': 1,
-    }
+    **sort_by_title,
+    **sort_by_date_available,
+    **sort_by_date_created,
+    **sort_by_status(),
+    **sort_by_relevance
 }
 
 
@@ -369,10 +403,10 @@ RECORDS_REST_SORT_OPTIONS = {
 RECORDS_REST_DEFAULT_SORT = {
     draft_index_name: {
         'query': 'best_match',
-        'noquery': 'best_match'
+        'noquery': 'by_titles'
     },
     all_datasets_index_name: {
         'query': 'best_match',
-        'noquery': 'best_match'
+        'noquery': 'by_titles'
     }
 }
