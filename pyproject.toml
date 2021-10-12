@@ -24,7 +24,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.dev-dependencies]
 oarepo = "^3.3"
 oarepo-invenio-model = "^3.0"
-oarepo-multilingual = "^2.2.0"
+oarepo-multilingual = "^2.6.1"
 oarepo-taxonomies = "^3.0.0a4"
 oarepo-records-draft = "^5.0.0a7"
 oarepo-references = "^1.9.0"

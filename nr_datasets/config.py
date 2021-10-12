@@ -14,11 +14,6 @@ from functools import partial
 from elasticsearch_dsl.query import Bool, Q
 from invenio_records_rest.facets import terms_filter
 from invenio_records_rest.utils import allow_all, deny_all
-from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_RECORD, \
-    published_index_name, \
-    DRAFT_DATASET_PID_TYPE, DRAFT_DATASET_RECORD, ALL_DATASET_PID_TYPE, ALL_DATASET_RECORD, \
-    all_datasets_index_name
-from nr_datasets.record import draft_index_name
 from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_APPROVED, STATE_PENDING_APPROVAL, \
     STATE_DELETED
 # TODO: this needs to be updated to new common data model
@@ -26,13 +21,18 @@ from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_A
 from oarepo_communities.links import community_record_links_factory
 from oarepo_communities.permissions import update_object_permission_impl
 from oarepo_communities.search import community_search_factory
-from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter
-from oarepo_multilingual.rest import language_aware_field
+from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter, \
+    language_aware_sort_field
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
 from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, RoleFacets
 from oarepo_ui.filters import nested_filter
 
+from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_RECORD, \
+    published_index_name, \
+    DRAFT_DATASET_PID_TYPE, DRAFT_DATASET_RECORD, ALL_DATASET_PID_TYPE, ALL_DATASET_RECORD, \
+    all_datasets_index_name
+from nr_datasets.record import draft_index_name
 from .links import nr_links_factory
 from .search import DatasetRecordsSearch
 
@@ -323,17 +323,6 @@ ALL_FILTERS = {
 
 ANONYMOUS_FACETS = ['creators', 'language', 'keywords', 'affiliation', 'subjectCategories']
 AUTHENTICATED_FACETS = ['oarepo:recordStatus'] + ANONYMOUS_FACETS
-
-
-# TODO: move this to oarepo_multilingual
-def language_aware_sort_field(field, suffix='.raw'):
-    field = language_aware_field(field)
-
-    def inner(asc):
-        return {f'{field()}{suffix}': {'order': 'asc' if asc else 'desc'}}
-
-    return inner
-
 
 sort_by_relevance = {'best_match': {
     'title': 'relevance',
