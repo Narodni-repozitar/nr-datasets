@@ -22,7 +22,7 @@ from oarepo_communities.links import community_record_links_factory
 from oarepo_communities.permissions import update_object_permission_impl, read_object_permission_impl
 from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter, \
-    language_aware_sort_field
+    language_aware_sort_nested_field
 from oarepo_taxonomies.serializers import taxonomy_enabled_search
 from oarepo_tokens.permissions import put_file_token_permission_factory
 from oarepo_ui.facets import translate_facets, term_facet, nested_facet, translate_facet, RoleFacets
@@ -332,7 +332,13 @@ sort_by_relevance = {'best_match': {
 
 sort_by_title = {'by_titles': {
     'title': 'titles',
-    'fields': [language_aware_sort_field('titles.title')],
+    'fields': [
+        language_aware_sort_nested_field(
+            'titles.title', {
+                'path': 'titles', 'filter': {
+                    'term': {'titles.titleType': 'mainTitle'}
+                }
+            })],
     'order': 2
 }}
 
