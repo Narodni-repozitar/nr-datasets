@@ -15,6 +15,8 @@ from oarepo_communities.signals import on_request_approval, on_request_changes, 
     on_revert_approval, on_delete_draft
 
 from . import config
+from invenio_indexer.signals import before_record_index
+from nr_datasets_metadata.record import date_ranges_to_index
 from .handlers import handle_request_approval, handle_request_changes, handle_approve, handle_revert_approval, \
     handle_publish, handle_unpublish, handle_delete_draft
 
@@ -49,6 +51,7 @@ class NRDatasets(object):
             config.RECORDS_REST_DEFAULT_SORT)
 
     def connect_signals(self):
+        before_record_index.connect(date_ranges_to_index)
         on_request_approval.connect(handle_request_approval)
         on_request_changes.connect(handle_request_changes)
         on_approve.connect(handle_approve)
