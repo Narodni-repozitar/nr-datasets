@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import List
 
 from edtf import parse_edtf
+from edtf.parser.edtf_exceptions import EDTFParseException
 from flask import make_response, jsonify, current_app
 from flask_restful import abort
 from invenio_db import db
@@ -98,12 +99,14 @@ def handle_publish(sender, **kwargs):
             sender['dateAvailable'] = dateAvailable.strftime('%Y-%m-%d')
         else:
             try:
-                dateAvailable = datetime.strptime(parse_edtf(sender['dateAvailable']), '%Y-%m-%d')
+                edtfAvailable = parse_edtf(sender['dateAvailable'])
             except EDTFParseException as e:
                 traceback.print_exc()
                 raise
 
-        # Set correct accessRights based on dateAvailable
+            dateAvailable = datetime(int(edtfAvailable.year), int(edtfAvailable.month), int(edtfAvailable.day))
+
+            # Set correct accessRights based on dateAvailable
         embargoed = f"https://{current_app.config['SERVER_NAME']}/2.0/taxonomies/accessRights/c-f1cf"
         oa = f"https://{current_app.config['SERVER_NAME']}/2.0/taxonomies/accessRights/c-abf2"
 
@@ -114,6 +117,9 @@ def handle_unpublish(sender, **kwargs):
     if isinstance(sender, PublishedDatasetRecord):
         print('making dataset private', sender)
         # TODO: send mail notification to interested people
+
+        restrictedAccess = f"https://{current_app.config['SERVER_NAME']}/2.0/taxonomies/accessRights/c-16ec"
+        sender['accessRights'] = restrictedAccess
 
 
 def handle_delete_draft(sender, **kwargs):
