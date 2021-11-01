@@ -14,6 +14,7 @@ from flask import make_response, jsonify
 from flask_restful import abort
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier
+from oarepo_doi_generator.api import doi_approved, doi_request
 from oarepo_records_draft import current_drafts
 from oarepo_records_draft.exceptions import InvalidRecordException
 from oarepo_records_draft.ext import PublishedDraftRecordPair
@@ -26,6 +27,8 @@ def handle_request_approval(sender, **kwargs):
     if isinstance(sender, DraftDatasetRecord):
         print('request draft dataset approval', sender)
         # TODO: send mail notification to community curators
+        if kwargs['data'] != None and 'doiRequest' in kwargs['data']:
+            doi_request(sender, kwargs['data']['doiRequest']['publisher'])
 
 
 def handle_request_changes(sender, **kwargs):
@@ -91,6 +94,8 @@ def handle_publish(sender, **kwargs):
         # TODO: send mail notification to interested people
         if 'dateAvailable' not in sender or not sender.get('dateAvailable'):
             sender['dateAvailable'] = datetime.today().strftime('%Y-%m-%d')
+        doi_approved(sender, 'datst', True)
+
 
 
 def handle_unpublish(sender, **kwargs):
