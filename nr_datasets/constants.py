@@ -21,3 +21,7 @@ prefixed_published_index_name = os.environ.get('INVENIO_SEARCH_INDEX_PREFIX',
 prefixed_draft_index_name = os.environ.get('INVENIO_SEARCH_INDEX_PREFIX', '') + draft_index_name
 prefixed_all_index_name = os.environ.get('INVENIO_SEARCH_INDEX_PREFIX', '') + all_index_name
 prefixed_all_datasets_index_name = os.environ.get('INVENIO_SEARCH_INDEX_PREFIX', '') + all_datasets_index_name
+
+embargoed_slug = 'c-f1cf'
+open_access_slug = 'c-abf2'
+restricted_slug = 'c-16ec'

@@ -11,12 +11,12 @@ from __future__ import absolute_import, print_function
 
 import logging
 
+from invenio_indexer.signals import before_record_index
+from nr_datasets_metadata.record import date_ranges_to_index
 from oarepo_communities.signals import on_request_approval, on_request_changes, on_approve, on_publish, on_unpublish, \
     on_revert_approval, on_delete_draft
 
 from . import config
-from invenio_indexer.signals import before_record_index
-from nr_datasets_metadata.record import date_ranges_to_index
 from .handlers import handle_request_approval, handle_request_changes, handle_approve, handle_revert_approval, \
     handle_publish, handle_unpublish, handle_delete_draft
 

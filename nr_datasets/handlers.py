@@ -7,10 +7,12 @@
 
 """Record state transition handler functions."""
 import traceback
-from typing import List
 from datetime import datetime
+from typing import List
 
-from flask import make_response, jsonify
+from edtf import parse_edtf
+from edtf.parser.edtf_exceptions import EDTFParseException
+from flask import make_response, jsonify, current_app
 from flask_restful import abort
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier
@@ -19,7 +21,9 @@ from oarepo_records_draft.exceptions import InvalidRecordException
 from oarepo_records_draft.ext import PublishedDraftRecordPair
 
 from nr_datasets.record import DraftDatasetRecord, PublishedDatasetRecord
-from .constants import DRAFT_DATASET_PID_TYPE, PUBLISHED_DATASET_PID_TYPE
+from .constants import DRAFT_DATASET_PID_TYPE, PUBLISHED_DATASET_PID_TYPE, restricted_slug, open_access_slug, \
+    embargoed_slug
+from .utils import access_rights_factory, edtf_to_date
 
 
 def handle_request_approval(sender, **kwargs):
@@ -89,14 +93,30 @@ def handle_publish(sender, **kwargs):
     if isinstance(sender, PublishedDatasetRecord):
         print('making dataset public', sender)
         # TODO: send mail notification to interested people
+        today = datetime.today()
+        date_available = None
+
         if 'dateAvailable' not in sender or not sender.get('dateAvailable'):
-            sender['dateAvailable'] = datetime.today().strftime('%Y-%m-%d')
+            date_available = today
+            sender['dateAvailable'] = date_available.strftime('%Y-%m-%d')
+        else:
+            try:
+                date_available = edtf_to_date(sender['dateAvailable'])
+            except EDTFParseException as e:
+                traceback.print_exc()
+                raise
+
+            # Set correct accessRights based on dateAvailable
+        sender['accessRights'] = access_rights_factory(
+            open_access_slug) if date_available <= today else access_rights_factory(embargoed_slug)
 
 
 def handle_unpublish(sender, **kwargs):
     if isinstance(sender, PublishedDatasetRecord):
         print('making dataset private', sender)
         # TODO: send mail notification to interested people
+
+        sender['accessRights'] = access_rights_factory(restricted_slug)
 
 
 def handle_delete_draft(sender, **kwargs):
