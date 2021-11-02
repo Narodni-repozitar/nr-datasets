@@ -1,5 +1,6 @@
 from flask import current_app
 from invenio_indexer.api import RecordIndexer
+from invenio_search.utils import build_alias_name
 from oarepo_communities.search import CommunitySearch
 
 
@@ -22,7 +23,11 @@ class DatasetRecordsSearch(CommunitySearch):
         typed_keys = current_app.config.get("NR_ES_TYPED_KEYS", False)
         self._params = {'typed_keys': typed_keys}
 
+
 class CommitingRecordIndexer(RecordIndexer):
-    def __init__(self, _refresh= None, *args, **kwargs):
-        self._refresh = True
-        super().__init__(*args, **kwargs)
+    def index(self, record, arguments=None, **kwargs):
+        ret = super().index(record, arguments=arguments, **kwargs)
+        index, doc_type = self.record_to_index(record)
+        index = build_alias_name(index)
+        self.client.indices.refresh(index=index)
+        return ret
