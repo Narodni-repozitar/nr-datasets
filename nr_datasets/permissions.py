@@ -40,4 +40,4 @@ def files_read_permission_factory(record, *args, **kwargs):
             access_rights_required(access_rights_factory(restricted_slug))
         ),
         access_rights_required(access_rights_factory(open_access_slug))
-    )
+    )(record, *args, **kwargs)
