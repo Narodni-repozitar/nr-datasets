@@ -19,7 +19,7 @@ from oarepo_communities.constants import STATE_PUBLISHED, STATE_EDITING, STATE_A
 # TODO: this needs to be updated to new common data model
 # from nr_generic.config import FACETS, CURATOR_FACETS, CURATOR_FILTERS, FILTERS
 from oarepo_communities.links import community_record_links_factory
-from oarepo_communities.permissions import update_object_permission_impl, read_object_permission_impl
+from oarepo_communities.permissions import update_object_permission_impl
 from oarepo_communities.search import community_search_factory
 from oarepo_multilingual import language_aware_text_term_facet, language_aware_text_terms_filter, \
     language_aware_sort_nested_field
@@ -34,6 +34,7 @@ from nr_datasets.constants import PUBLISHED_DATASET_PID_TYPE, PUBLISHED_DATASET_
     all_datasets_index_name
 from nr_datasets.record import draft_index_name
 from .links import nr_links_factory
+from .permissions import files_read_permission_factory
 from .search import DatasetRecordsSearch
 
 _ = lambda x: x
@@ -81,7 +82,7 @@ RECORDS_DRAFT_ENDPOINTS = {
             # Who can upload attachments to a draft dataset record
             put_file_factory=deny_all,
             # Who can download attachments from a draft dataset record
-            get_file_factory=allow_all,
+            get_file_factory=files_read_permission_factory,
             # Who can delete attachments from a draft dataset record
             delete_file_factory=deny_all
         )
@@ -123,7 +124,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         },
         'files': dict(
             put_file_factory=put_file_token_permission_factory(update_object_permission_impl),
-            get_file_factory=put_file_token_permission_factory(read_object_permission_impl),
+            get_file_factory=put_file_token_permission_factory(files_read_permission_factory),
             delete_file_factory='oarepo_communities.permissions.update_object_permission_impl'
         )
 
@@ -157,7 +158,7 @@ RECORDS_DRAFT_ENDPOINTS = {
             # Who can upload attachments to a draft dataset record
             put_file_factory=deny_all,
             # Who can download attachments from a draft dataset record
-            get_file_factory=allow_all,
+            get_file_factory=files_read_permission_factory,
             # Who can delete attachments from a draft dataset record
             delete_file_factory=deny_all
         )
@@ -186,7 +187,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'list_permission_factory_imp': deny_all,
         'files': dict(
             put_file_factory=deny_all,
-            get_file_factory='oarepo_communities.permissions.read_object_permission_impl',
+            get_file_factory=files_read_permission_factory,
             delete_file_factory=deny_all
         )
     }
