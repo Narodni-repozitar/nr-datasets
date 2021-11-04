@@ -10,9 +10,8 @@ import traceback
 from datetime import datetime
 from typing import List
 
-from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
-from flask import make_response, jsonify, current_app
+from flask import make_response, jsonify
 from flask_restful import abort
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier
