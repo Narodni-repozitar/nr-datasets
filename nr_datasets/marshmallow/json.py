@@ -29,7 +29,7 @@ class NRDatasetMetadataSchemaV3(OARepoCommunitiesMixin,
                                 DataSetMetadataSchemaV3):
     """Schema for NR dataset record metadata."""
     _doi_requested = Nested(DOIRequested(), required=True,
-                                          data_key='oarepo:doirequested',
-                                          attribute='oarepo:doirequested')
+                                          data_key='oarepo:doirequest',
+                                          attribute='oarepo:doirequest')
 
 

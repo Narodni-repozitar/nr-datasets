@@ -9,7 +9,7 @@
     {"$ref": "../invenio-v3.0.0.json#/definitions/InvenioRecord"},
      {
       "properties": {
-        "oarepo:doirequested": {
+        "oarepo:doirequest": {
           "type": "object",
           "properties": {
             "publisher": {

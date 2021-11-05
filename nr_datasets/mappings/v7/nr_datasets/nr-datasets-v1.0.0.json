@@ -14,7 +14,7 @@
       "invenio-v3.0.0.json#/InvenioRecord"
     ],
     "properties": {
-      "oarepo:doirequested": {
+      "oarepo:doirequest": {
         "properties": {
           "publisher": {
             "type": "text"
