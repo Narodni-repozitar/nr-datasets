@@ -10,12 +10,12 @@ import traceback
 from datetime import datetime
 from typing import List
 
-from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
-from flask import make_response, jsonify, current_app
+from flask import make_response, jsonify
 from flask_restful import abort
 from invenio_db import db
 from invenio_pidstore.models import PersistentIdentifier
+from oarepo_doi_generator.api import doi_approved, doi_request
 from oarepo_records_draft import current_drafts
 from oarepo_records_draft.exceptions import InvalidRecordException
 from oarepo_records_draft.ext import PublishedDraftRecordPair
@@ -30,6 +30,8 @@ def handle_request_approval(sender, **kwargs):
     if isinstance(sender, DraftDatasetRecord):
         print('request draft dataset approval', sender)
         # TODO: send mail notification to community curators
+        if kwargs['data'] != None and 'doiRequest' in kwargs['data']:
+            doi_request(sender, kwargs['data']['doiRequest']['publisher'])
 
 
 def handle_request_changes(sender, **kwargs):
@@ -106,9 +108,11 @@ def handle_publish(sender, **kwargs):
                 traceback.print_exc()
                 raise
 
-            # Set correct accessRights based on dateAvailable
+        # Set correct accessRights based on dateAvailable
         sender['accessRights'] = access_rights_factory(
             open_access_slug) if date_available <= today else access_rights_factory(embargoed_slug)
+
+        doi_approved(sender, PUBLISHED_DATASET_PID_TYPE, True)
 
 
 def handle_unpublish(sender, **kwargs):

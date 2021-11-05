@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "techlib-nr-datasets"
-version = "1.1.7"
+version = "1.1.10"
 description = "Czech National Repository datasets data model."
 license = "MIT"
 keywords = ["Czech", "Nation", "Repository", "Invenio", "datasets"]
@@ -16,6 +16,7 @@ python = "^3.8"
 techlib-nr-datasets-metadata  = "^3.0"
 oarepo = "^3.3.59"
 oarepo-tokens = "^0.1.9"
+oarepo-doi-generator = "^1.0.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

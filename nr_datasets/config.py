@@ -36,6 +36,7 @@ from nr_datasets.record import draft_index_name
 from .links import nr_links_factory
 from .permissions import files_read_permission_factory
 from .search import DatasetRecordsSearch
+from .search import DatasetRecordsSearch, CommitingRecordIndexer
 
 _ = lambda x: x
 
@@ -77,7 +78,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
         'search_class': DatasetRecordsSearch,
-        # 'indexer_class': CommitingRecordIndexer,
+        'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
             put_file_factory=deny_all,
@@ -153,7 +154,7 @@ RECORDS_DRAFT_ENDPOINTS = {
         'links_factory_imp': partial(community_record_links_factory,
                                      original_links_factory=nr_links_factory),
         'search_class': DatasetRecordsSearch,
-        # 'indexer_class': CommitingRecordIndexer,
+        'indexer_class': CommitingRecordIndexer,
         'files': dict(
             # Who can upload attachments to a draft dataset record
             put_file_factory=deny_all,

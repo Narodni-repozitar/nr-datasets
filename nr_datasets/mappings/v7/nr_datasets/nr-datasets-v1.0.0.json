@@ -12,6 +12,21 @@
       "communities-v3.0.0.json#/Communities",
       "fsm-record-v2.0.0.json#/FSMRecord",
       "invenio-v3.0.0.json#/InvenioRecord"
-    ]
+    ],
+    "properties": {
+      "oarepo:doirequest": {
+        "properties": {
+          "publisher": {
+            "type": "text"
+          },
+          "requestedBy": {
+            "type": "integer"
+          },
+          "requestedDate": {
+            "type": "date"
+          }
+        }
+      }
+    }
   }
 }

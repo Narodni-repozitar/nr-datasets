@@ -69,3 +69,5 @@ epydoc/
 database.db
 
 venv/
+.venv/
+*.lock
