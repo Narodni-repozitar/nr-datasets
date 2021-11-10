@@ -13,7 +13,7 @@
           "type": "object",
           "properties": {
             "publisher": {
-              "$ref": "string"
+              "type": "string"
             },
             "requestedBy": {"type": "integer"},
             "requestedDate": {"type": "string","format": "datetime"}
