@@ -27,6 +27,6 @@ class NRDatasetMetadataSchemaV3(OARepoCommunitiesMixin,
                                 InvenioRecordMetadataFilesMixin,
                                 DataSetMetadataSchemaV3):
     """Schema for NR dataset record metadata."""
-    _doi_requested = Nested(DOIRequested(), required=True,
+    _doi_requested = Nested(DOIRequested(),
                             data_key='oarepo:doirequest',
                             attribute='oarepo:doirequest')
