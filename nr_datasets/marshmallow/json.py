@@ -6,8 +6,8 @@
 # the terms of the MIT License; see LICENSE file for more details.
 
 """JSON Schemas."""
-from marshmallow import Schema, fields
-from marshmallow.fields import Nested
+from marshmallow import Schema, fields, INCLUDE
+from marshmallow.fields import Nested, Bool
 from marshmallow_utils.fields import EDTFDateString, SanitizedUnicode
 from nr_datasets_metadata.marshmallow import DataSetMetadataSchemaV3
 from oarepo_communities.marshmallow import OARepoCommunitiesMixin
@@ -21,12 +21,19 @@ class DOIRequested(Schema):
     requestedDate = EDTFDateString(required=True)
 
 
+class ValiditySchema(Schema):
+    class Meta:
+        unknown = INCLUDE
+
+
 class NRDatasetMetadataSchemaV3(OARepoCommunitiesMixin,
                                 FSMRecordSchemaMixin,
                                 InvenioRecordMetadataSchemaV1Mixin,
                                 InvenioRecordMetadataFilesMixin,
                                 DataSetMetadataSchemaV3):
     """Schema for NR dataset record metadata."""
+    _validity = Nested(ValiditySchema(), data_key='oarepo:validity', attribute='oarepo:validity')
+    _draft = Bool(data_key='oarepo:draft', attribute='oarepo:draft')
     _doi_requested = Nested(DOIRequested(),
                             data_key='oarepo:doirequest',
                             attribute='oarepo:doirequest')
