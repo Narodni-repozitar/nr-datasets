@@ -1,6 +1,6 @@
 import os
 
-DATASETS_ALLOWED_SCHEMAS = ['nr_datasets/nr-datasets-v1.0.0.json']
+DATASETS_ALLOWED_SCHEMAS = ['nr_datasets/nr-datasets-v1.0.0.json', 'https://narodni-repozitar.cz/schemas/nr_datasets/nr-datasets-v1.0.0.json']
 DATASETS_PREFERRED_SCHEMA = 'nr_datasets/nr-datasets-v1.0.0.json'
 
 PUBLISHED_DATASET_PID_TYPE = 'datst'
