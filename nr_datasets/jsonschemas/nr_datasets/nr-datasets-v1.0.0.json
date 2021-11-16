@@ -1,7 +1,7 @@
 {
   "title": "NR DataSet record v1.0.0",
   "type": "object",
-  "id": "https://narodni-repozitar.cz/schemas/nr_datasets/nr-datasets-v1.0.0.json",
+  "id": "https://data.narodni-repozitar.cz/schemas/nr_datasets/nr-datasets-v1.0.0.json",
   "allOf": [
     {"$ref": "../nr_datasets_metadata/nr-datasets-metadata-v3.0.0.json#/definitions/DataSet"},
     {"$ref": "../communities-v3.0.0.json#/definitions/Communities"},
