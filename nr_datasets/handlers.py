@@ -112,7 +112,7 @@ def handle_publish(sender, **kwargs):
         sender['accessRights'] = access_rights_factory(
             open_access_slug) if date_available <= today else access_rights_factory(embargoed_slug)
 
-        doi_approved(sender, PUBLISHED_DATASET_PID_TYPE, True)
+        doi_approved(sender, PUBLISHED_DATASET_PID_TYPE)
 
 
 def handle_unpublish(sender, **kwargs):
