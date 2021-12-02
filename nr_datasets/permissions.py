@@ -66,7 +66,7 @@ def community_read_permission_impl(record, *args, **kwargs):
 def files_read_permission_factory(record, *args, **kwargs):
     return require_any(
         require_all(
-            community_read_permission_impl,
+            community_read_permission_impl(record, *args, **kwargs),
             access_rights_required([
                 access_rights_factory(embargoed_slug),
                 access_rights_factory(restricted_slug)]),
