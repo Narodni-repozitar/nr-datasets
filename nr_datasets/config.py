@@ -304,6 +304,7 @@ ALL_FACETS = {
 
 ALL_FILTERS = {
     'creators': terms_filter('creators.fullName'),
+    'contributors': terms_filter('contributors.fullName'),
     'language': nested_filter('language',
                               language_aware_text_terms_filter('language.title')),
     'keywords': language_aware_text_terms_filter('keywords'),
