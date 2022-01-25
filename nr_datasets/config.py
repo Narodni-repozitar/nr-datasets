@@ -389,7 +389,7 @@ def rest_facets_config_factory(facets_list):
             {k: ALL_FACETS[k] for k in ALL_FACETS.keys() & set(facets_list)},
             label='{facet_key}',
             value='{value_key}'),
-        "filters": {k: ALL_FILTERS[k] for k in ALL_FILTERS.keys() & set(facets_list)}
+        "filters": {k: ALL_FILTERS[k] for k in ALL_FILTERS.keys() & set(facets_list + ['contributors'])}
     }
 
 
